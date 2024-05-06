@@ -1,5 +1,6 @@
 const express = require('express');
-const pino = require('./middlewares/pinoLogger');
+const pino = require('./middlewares/pino');
+const logger = require('./services/pino');
 const { MongoClient } = require('mongodb');
 const cors = require('cors');
 const app = express();
@@ -18,12 +19,31 @@ const dbName = process.env.DB_NAME;
 
 MongoClient.connect(url)
     .then(client => {
-        console.log('Connected to MongoDB');
-        const db = client.db(dbName);
-        app.use('/api/user', userRoutes(db));
-    })
-    .catch(err => console.error(err));
 
-app.listen(port, () => console.log(`Server running on port ${port}`));
+        logger.info('Connected to MongoDB');
+
+        const db = client.db(dbName);
+
+        app.use('/api/user', userRoutes(db));
+
+        app.listen(port, () => {
+
+            logger.info(`Server running on port ${port}`)
+        
+        });
+
+    })
+    .catch(err => {
+
+        logger.error(err);
+
+    });
+
+    process.on('SIGINT', () => {
+
+        dbClient.close();
+        process.exit(0);
+        
+    });
 
 module.exports = app;

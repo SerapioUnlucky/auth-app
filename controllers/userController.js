@@ -1,4 +1,5 @@
 const User = require('../models/userModel');
+const logger = require('../services/pino');
 const bcrypt = require('bcrypt');
 const jwt = require('../services/token');
 const { registerSchema } = require('../helpers/validationHelper');
@@ -15,6 +16,7 @@ const register = async (db, req, res) => {
 
         if (validationResult.error) {
 
+            logger.error(validationResult.error.details[0].message);
             return res.status(400).json({ message: validationResult.error.details[0].message });
 
         }
@@ -23,7 +25,8 @@ const register = async (db, req, res) => {
 
         if (userExists) {
 
-            return res.status(400).json({ message: 'El nombre de usuario ya existe' });
+            logger.error('El usuario ya existe en la base de datos');
+            return res.status(400).json({ message: 'El usuario ya existe' });
 
         }
 
@@ -31,6 +34,7 @@ const register = async (db, req, res) => {
         user.password = pwd;
         await db.collection(collection).insertOne(user);
 
+        logger.info('El usuario se ha registrado con éxito');
         return res.status(201).json({
             message: 'Usuario registrado con éxito',
             user: user
@@ -38,6 +42,7 @@ const register = async (db, req, res) => {
 
     } catch (error) {
 
+        logger.error(error.message);
         return res.status(500).json({
             message: 'Error al registrar el usuario'
         });
@@ -56,6 +61,7 @@ const login = async (db, req, res) => {
 
         if (!user) {
 
+            logger.error('Usuario no esta registrado en la base de datos');
             return res.status(404).json({ message: 'Usuario no encontrado' });
 
         }
@@ -64,12 +70,14 @@ const login = async (db, req, res) => {
 
         if (!match) {
 
+            logger.error('Contraseña ingresa es incorrecta');
             return res.status(401).json({ message: 'Contraseña incorrecta' });
 
         }
 
         const token = jwt.createToken(user);
 
+        logger.info('Usuario autenticado con éxito');
         return res.status(200).json({
             message: 'Usuario autenticado con éxito',
             user: {
@@ -81,9 +89,9 @@ const login = async (db, req, res) => {
 
     } catch (error) {
 
+        logger.error(error.message);
         return res.status(500).json({
-            message: 'Error al autenticar el usuario',
-            error: error.message
+            message: 'Error al autenticar el usuario'
         });
 
     }
@@ -97,6 +105,16 @@ const profile = async (db, req, res) => {
         const username = req.user.username;
         const user = await db.collection(collection).findOne({ username: username });
 
+        if (!user) {
+
+            logger.error('El usuario no se encuentra registrado en la base de datos');
+            return res.status(404).json({
+                message: 'Usuario no encontrado'
+            });
+
+        }
+
+        logger.info('Usuario obtenido con éxito');
         return res.status(200).json({
             message: 'Usuario obtenido con éxito',
             user
@@ -104,6 +122,7 @@ const profile = async (db, req, res) => {
 
     } catch (error) {
 
+        logger.error(error.message);
         return res.status(500).json({
             message: 'Error al obtener el usuario'
         });
