@@ -8,12 +8,12 @@ const collection = 'users';
 
 const register = async (db, req, res) => {
 
-    const params = req.body;
-    let user = new User(params.name, params.lastname, params.username, params.password, params.birthdate, params.age);
-    logger.trace('Ingresando a la funcion de registro con los parametros ingresados: ');
-    logger.trace({ params });
-
     try {
+
+        const params = req.body;
+        
+        logger.trace('Ingresando a la funcion de registro con los siguientes parametros: ');
+        logger.trace({ params });
 
         logger.trace('Validando los parametros ingresados para el registro');
         const validationResult = registerSchema.validate(params);
@@ -34,6 +34,8 @@ const register = async (db, req, res) => {
             return res.status(400).json({ message: 'El usuario ya existe' });
 
         }
+
+        let user = new User(params.name, params.lastname, params.username, params.password, params.birthdate, params.age);
 
         logger.trace('Encriptando la contraseña del usuario y registrandolo en la base de datos');
         const pwd = await bcrypt.hash(params.password, 10);
@@ -60,11 +62,12 @@ const register = async (db, req, res) => {
 
 const login = async (db, req, res) => {
 
-    const params = req.body;
-    logger.trace('Ingresando a la funcion login con los siguientes parametros: ');
-    logger.trace({ params })
-
     try {
+
+        const params = req.body;
+
+        logger.trace('Ingresando a la funcion login con los siguientes parametros: ');
+        logger.trace({ params })
 
         logger.trace(`Buscando al usuario ${params.username} en la base de datos`);
         const user = await db.collection(collection).findOne({ username: params.username });
@@ -116,8 +119,9 @@ const profile = async (db, req, res) => {
 
         const id = req.params.id;
         const objectId = new ObjectId(id);
-        const user = await db.collection(collection).findOne({ _id: objectId });
+
         logger.trace(`Buscando al usuario de id ${id} en la base de datos`);
+        const user = await db.collection(collection).findOne({ _id: objectId });
 
         if (!user) {
 
