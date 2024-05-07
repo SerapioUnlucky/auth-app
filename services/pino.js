@@ -1,3 +1,7 @@
-const pino = require('pino')();
+const pino = require('pino');
 
-module.exports = pino;
+const logger = pino({
+    level: 'trace'
+});
+
+module.exports = logger;

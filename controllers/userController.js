@@ -3,15 +3,19 @@ const logger = require('../services/pino');
 const bcrypt = require('bcrypt');
 const jwt = require('../services/token');
 const { registerSchema } = require('../helpers/validationHelper');
+const { ObjectId } = require('mongodb');
 const collection = 'users';
 
 const register = async (db, req, res) => {
 
     const params = req.body;
-    const user = new User(params.name, params.lastname, params.username, params.password, params.birthdate, params.age);
+    let user = new User(params.name, params.lastname, params.username, params.password, params.birthdate, params.age);
+    logger.trace('Ingresando a la funcion de registro con los parametros ingresados: ');
+    logger.trace({ params });
 
     try {
 
+        logger.trace('Validando los parametros ingresados para el registro');
         const validationResult = registerSchema.validate(params);
 
         if (validationResult.error) {
@@ -21,6 +25,7 @@ const register = async (db, req, res) => {
 
         }
 
+        logger.trace(`Validacion exitosa, buscando al usuario ${params.username} en la base de datos`);
         const userExists = await db.collection(collection).findOne({ username: params.username });
 
         if (userExists) {
@@ -30,8 +35,10 @@ const register = async (db, req, res) => {
 
         }
 
+        logger.trace('Encriptando la contraseña del usuario y registrandolo en la base de datos');
         const pwd = await bcrypt.hash(params.password, 10);
         user.password = pwd;
+
         await db.collection(collection).insertOne(user);
 
         logger.info('El usuario se ha registrado con éxito');
@@ -54,30 +61,35 @@ const register = async (db, req, res) => {
 const login = async (db, req, res) => {
 
     const params = req.body;
+    logger.trace('Ingresando a la funcion login con los siguientes parametros: ');
+    logger.trace({ params })
 
     try {
 
+        logger.trace(`Buscando al usuario ${params.username} en la base de datos`);
         const user = await db.collection(collection).findOne({ username: params.username });
 
         if (!user) {
 
-            logger.error('Usuario no esta registrado en la base de datos');
+            logger.error(`El usuario ${params.username} no esta registrado en la base de datos`);
             return res.status(404).json({ message: 'Usuario no encontrado' });
 
         }
 
+        logger.trace(`Usuario ${params.username} encontrado en la base de datos, comparando contrasenias`);
         const match = await bcrypt.compare(params.password, user.password);
 
         if (!match) {
 
-            logger.error('Contraseña ingresa es incorrecta');
+            logger.error('La contrasenia ingresada es incorrecta');
             return res.status(401).json({ message: 'Contraseña incorrecta' });
 
         }
 
+        logger.trace('Contrasenia correcta, generando token de autenticacion');
         const token = jwt.createToken(user);
 
-        logger.info('Usuario autenticado con éxito');
+        logger.trace(`Autenticacion exitosa, retornando token de autenticacion para el usuario ${user.username}`);
         return res.status(200).json({
             message: 'Usuario autenticado con éxito',
             user: {
@@ -102,8 +114,10 @@ const profile = async (db, req, res) => {
 
     try {
 
-        const username = req.user.username;
-        const user = await db.collection(collection).findOne({ username: username });
+        const id = req.params.id;
+        const objectId = new ObjectId(id);
+        const user = await db.collection(collection).findOne({ _id: objectId });
+        logger.trace(`Buscando al usuario de id ${id} en la base de datos`);
 
         if (!user) {
 
@@ -114,7 +128,7 @@ const profile = async (db, req, res) => {
 
         }
 
-        logger.info('Usuario obtenido con éxito');
+        logger.trace(`Usuario obtenido con exito: ${user.username}`);
         return res.status(200).json({
             message: 'Usuario obtenido con éxito',
             user

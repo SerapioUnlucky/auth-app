@@ -6,7 +6,7 @@ const check = require('../middlewares/auth');
 const userRoutes = (db) => {
     router.post('/register', (req, res) => userController.register(db, req, res));
     router.post('/login', (req, res) => userController.login(db, req, res));
-    router.get('/profile', check.auth, (req, res) => userController.profile(db, req, res));
+    router.get('/profile/:id', check.auth, (req, res) => userController.profile(db, req, res));
     return router;
 }
 

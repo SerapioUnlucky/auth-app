@@ -13,11 +13,11 @@ exports.auth = (req, res, next) => {
 
     }
 
-    let token = req.headers.authorization.replace(/['"]+/g, '');
+    const token = req.headers.authorization.replace(/['"]+/g, '');
 
     try {
 
-        let payload = jwt.verify(token, secret);
+        const payload = jwt.verify(token, secret);
 
         if (payload.exp <= Date.now()) {
 

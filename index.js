@@ -41,7 +41,7 @@ MongoClient.connect(url)
 
     process.on('SIGINT', () => {
 
-        dbClient.close();
+        MongoClient.close();
         process.exit(0);
         
     });
