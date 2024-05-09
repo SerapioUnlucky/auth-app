@@ -1,6 +1,6 @@
 const express = require('express');
 const pino = require('./middlewares/pino');
-const logger = require('./services/pino');
+const logger = require('./helpers/pino');
 const { MongoClient } = require('mongodb');
 const cors = require('cors');
 const app = express();

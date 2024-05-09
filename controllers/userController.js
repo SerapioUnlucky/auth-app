@@ -1,10 +1,10 @@
 const User = require('../models/userModel');
-const logger = require('../services/pino');
-const bcrypt = require('bcrypt');
+const logger = require('../helpers/pino');
 const jwt = require('../services/token');
+const method = require('../helpers/methods');
+const collection = 'users';
 const { registerSchema } = require('../helpers/validationHelper');
 const { ObjectId } = require('mongodb');
-const collection = 'users';
 
 const register = async (db, req, res) => {
 
@@ -26,7 +26,7 @@ const register = async (db, req, res) => {
         }
 
         logger.trace(`Validacion exitosa, buscando al usuario ${params.username} en la base de datos`);
-        const userExists = await db.collection(collection).findOne({ username: params.username });
+        const userExists = await method.findOne(db, collection, { username: params.username });
 
         if (userExists) {
 
@@ -38,10 +38,10 @@ const register = async (db, req, res) => {
         let user = new User(params.name, params.lastname, params.username, params.password, params.birthdate, params.age);
 
         logger.trace('Encriptando la contraseña del usuario y registrandolo en la base de datos');
-        const pwd = await bcrypt.hash(params.password, 10);
+        const pwd = await method.bcryptHash(user.password);
         user.password = pwd;
 
-        await db.collection(collection).insertOne(user);
+        await method.insertOne(db, collection, user);
 
         logger.info('El usuario se ha registrado con éxito');
         return res.status(201).json({
@@ -70,7 +70,7 @@ const login = async (db, req, res) => {
         logger.trace({ params })
 
         logger.trace(`Buscando al usuario ${params.username} en la base de datos`);
-        const user = await db.collection(collection).findOne({ username: params.username });
+        const user = await method.findOne(db, collection, { username: params.username });
 
         if (!user) {
 
@@ -80,7 +80,7 @@ const login = async (db, req, res) => {
         }
 
         logger.trace(`Usuario ${params.username} encontrado en la base de datos, comparando contrasenias`);
-        const match = await bcrypt.compare(params.password, user.password);
+        const match = await method.bcryptCompare(params.password, user.password);
 
         if (!match) {
 
@@ -117,11 +117,10 @@ const profile = async (db, req, res) => {
 
     try {
 
-        const id = req.params.id;
-        const objectId = new ObjectId(id);
+        const id = new ObjectId(req.params.id);
 
         logger.trace(`Buscando al usuario de id ${id} en la base de datos`);
-        const user = await db.collection(collection).findOne({ _id: objectId });
+        const user = await method.findOne(db, collection, { _id: id });
 
         if (!user) {
 

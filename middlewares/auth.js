@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const logger = require('../services/pino');
+const logger = require('../helpers/pino');
 const secret = process.env.SECRET;
 
 exports.auth = (req, res, next) => {
