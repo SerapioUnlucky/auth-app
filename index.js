@@ -1,4 +1,3 @@
-const swaggerApp = require('./services/swagger');
 const express = require('express');
 const pino = require('./middlewares/pino');
 const logger = require('./helpers/pino');
@@ -30,10 +29,6 @@ MongoClient.connect(url)
 
             logger.info(`Server running on port ${port}`)
 
-        });
-
-        swaggerApp.listen(process.env.SWAGGER, () => {
-            logger.info(`Swagger UI available at http://localhost:4000/api-docs`);
         });
 
     })

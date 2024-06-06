@@ -7,9 +7,23 @@ const findOne = async (db, collection, query) => {
 
 }
 
+const find = async (db, collection) => {
+
+    const result = await db.collection(collection).find().toArray();
+    return result;
+
+}
+
 const insertOne = async (db, collection, query) => {
 
     const result = await db.collection(collection).insertOne(query);
+    return result;
+
+}
+
+const deleteOne = async (db, collection, query) => {
+
+    const result = await db.collection(collection).deleteOne(query);
     return result;
 
 }
@@ -30,7 +44,9 @@ const bcryptCompare = async (password, hash) => {
 
 module.exports = {
     findOne,
+    find,
     insertOne,
+    deleteOne,
     bcryptHash,
     bcryptCompare
 };
