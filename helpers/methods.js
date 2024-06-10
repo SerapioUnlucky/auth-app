@@ -21,6 +21,13 @@ const insertOne = async (db, collection, query) => {
 
 }
 
+const updateOne = async (db, collection, query, update) => {
+
+    const result = await db.collection(collection).updateOne(query, { $set: update });
+    return result;
+
+}
+
 const deleteOne = async (db, collection, query) => {
 
     const result = await db.collection(collection).deleteOne(query);
@@ -46,6 +53,7 @@ module.exports = {
     findOne,
     find,
     insertOne,
+    updateOne,
     deleteOne,
     bcryptHash,
     bcryptCompare

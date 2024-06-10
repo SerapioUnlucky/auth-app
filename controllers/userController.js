@@ -219,8 +219,48 @@ const deleted = async (db, req, res) => {
 
 }
 
+const update = async (db, req, res) => {
+
+    try {
+
+        const id = ObjectId.createFromHexString(req.params.id);
+        const params = req.body;
+
+        logger.trace(`Buscando al usuario de id ${id} en la base de datos`);
+        const user = await method.findOne(db, collection, { _id: id });
+
+        if (!user) {
+
+            logger.error('El usuario no se encuentra registrado en la base de datos');
+            return res.status(404).json({
+                message: 'Usuario no encontrado'
+            });
+
+        }
+
+        logger.trace(`Usuario obtenido con exito: ${user.username}, actualizando usuario en la base de datos`);
+        await method.updateOne(db, collection, { _id: id }, params);
+
+        logger.info('Usuario actualizado con exito');
+        return res.status(200).json({
+            message: 'Usuario actualizado con éxito',
+            user
+        });
+
+    } catch (error) {
+
+        logger.error(error.message);
+        return res.status(500).json({
+            message: 'Error al actualizar el usuario'
+        });
+
+    }
+
+}
+
 module.exports = {
     register,
+    update,
     login,
     profile,
     users,
