@@ -197,3 +197,4 @@ Actualiza un usuario por su id.
 - Driver nativo de MongoDB
 - Jest
 - Joi
+- Pino (logs)
