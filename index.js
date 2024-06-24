@@ -38,11 +38,4 @@ MongoClient.connect(url)
 
     });
 
-process.on('SIGINT', () => {
-
-    MongoClient.close();
-    process.exit(0);
-
-});
-
 module.exports = app;

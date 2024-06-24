@@ -11,7 +11,7 @@ const register = async (db, req, res) => {
     try {
 
         const params = req.body;
-        
+
         logger.trace('Ingresando a la funcion de registro con los siguientes parametros: ');
         logger.trace({ params });
 
@@ -207,14 +207,14 @@ const deleted = async (db, req, res) => {
             message: 'Usuario eliminado con éxito',
             user
         });
-        
+
     } catch (error) {
 
         logger.error(error.message);
         return res.status(500).json({
             message: 'Error al eliminar el usuario'
         });
-        
+
     }
 
 }

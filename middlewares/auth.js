@@ -31,14 +31,14 @@ exports.auth = (req, res, next) => {
         req.user = payload;
 
         next();
-        
+
     } catch (error) {
 
         logger.error('El token ya no es válido');
         return res.status(403).json({
             message: 'No tienes autorización'
         });
-        
+
     }
 
 }
